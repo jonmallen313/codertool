@@ -1,3 +1,11 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -19,13 +27,18 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
 
 # Virtual Environment
-.env
-.venv
-env/
+.venv/
 venv/
 ENV/
+env/
 
 # VS Code
 .vscode/*
@@ -34,14 +47,31 @@ ENV/
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
+.history/
 
-# Node (for VS Code extension)
-node_modules/
-dist/
-out/
+# VS Code Extension specific
+vscode-extension/node_modules/
+vscode-extension/dist/
+vscode-extension/out/
+vscode-extension/*.vsix
 
-# IDE
+# IDEs
 .idea/
 *.swp
 *.swo
 .DS_Store
+*.sublime-workspace
+*.sublime-project
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local development
+.python-version
+poetry.lock
+.direnv/
+.envrc
