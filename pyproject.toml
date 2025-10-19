@@ -3,6 +3,7 @@ name = "codertool"
 version = "0.1.0"
 description = "Claude-powered multi-agent development system"
 authors = ["Your Name <your.email@example.com>"]
+packages = [{include = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -10,6 +11,7 @@ fastapi = "^0.104.0"
 uvicorn = "^0.23.2"
 anthropic = "^0.5.0"
 pydantic = "^2.4"
+pydantic-settings = "^2.0.3"
 python-dotenv = "^1.0.0"
 httpx = "^0.25.0"
 PyGithub = "^2.1.1"

@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Dict, List
+import uvicorn
 
 from src.core.config import settings
 from src.core.memory import SharedMemory, Task
@@ -9,7 +10,7 @@ from src.agents.coder import CoderAgent
 from src.agents.reviewer import ReviewerAgent
 from src.agents.devops import DevOpsAgent
 
-app = FastAPI(title="Claude Multi-Agent System")
+app = FastAPI(title="Claude Multi-Agent System", debug=settings.DEBUG)
 memory = SharedMemory()
 
 # Initialize agents
