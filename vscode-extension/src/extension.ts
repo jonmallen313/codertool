@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 interface Task {
     id: string;
@@ -17,11 +17,14 @@ export class CoderToolStatusBar {
             100
         );
         this.statusBarItem.command = 'codertool.viewStatus';
+        this.statusBarItem.text = "$(tools) CoderTool";
         this.statusBarItem.show();
     }
 
-    update(text: string) {
-        this.statusBarItem.text = `$(sync~spin) ${text}`;
+    update(text: string, error: boolean = false) {
+        this.statusBarItem.text = error 
+            ? `$(error) CoderTool: ${text}`
+            : `$(sync~spin) CoderTool: ${text}`;
     }
 
     dispose() {
@@ -30,33 +33,42 @@ export class CoderToolStatusBar {
 }
 
 export function activate(context: vscode.ExtensionContext) {
+    console.log('CoderTool extension is now active');
+    
     const statusBar = new CoderToolStatusBar();
     const apiClient = axios.create({
-        baseURL: 'http://localhost:8000'
+        baseURL: 'http://127.0.0.1:8000',
+        timeout: 5000
     });
 
     // Create task command
     let createTask = vscode.commands.registerCommand('codertool.createTask', async () => {
-        const taskTypes = ['code', 'review', 'fix', 'architecture'];
-        const taskType = await vscode.window.showQuickPick(taskTypes, {
-            placeHolder: 'Select task type'
-        });
-
-        if (!taskType) {
-            return;
-        }
-
-        const description = await vscode.window.showInputBox({
-            prompt: 'Enter task description'
-        });
-
-        if (!description) {
-            return;
-        }
-
         try {
+            const taskTypes = ['code', 'review', 'fix', 'architecture'];
+            const taskType = await vscode.window.showQuickPick(taskTypes, {
+                placeHolder: 'Select task type'
+            });
+
+            if (!taskType) {
+                return;
+            }
+
+            const description = await vscode.window.showInputBox({
+                prompt: 'Enter task description',
+                placeHolder: 'Describe what you want the AI to do'
+            });
+
+            if (!description) {
+                return;
+            }
+
             statusBar.update('Creating task...');
+            
+            // Generate a unique ID
+            const taskId = `task_${Date.now()}`;
+            
             const response = await apiClient.post('/tasks/', {
+                id: taskId,
                 type: taskType,
                 description,
                 context: []
@@ -65,8 +77,23 @@ export function activate(context: vscode.ExtensionContext) {
             vscode.window.showInformationMessage(`Task created: ${response.data.id}`);
             statusBar.update('Task created');
         } catch (error) {
-            vscode.window.showErrorMessage('Failed to create task');
-            statusBar.update('Error');
+            console.error('Error creating task:', error);
+            
+            if (error instanceof AxiosError) {
+                if (error.code === 'ECONNREFUSED') {
+                    vscode.window.showErrorMessage(
+                        'Could not connect to CoderTool server. Please make sure the server is running on http://127.0.0.1:8000'
+                    );
+                } else {
+                    vscode.window.showErrorMessage(
+                        `Server error: ${error.response?.data?.detail || error.message}`
+                    );
+                }
+            } else {
+                vscode.window.showErrorMessage(`Failed to create task: ${error}`);
+            }
+            
+            statusBar.update('Error', true);
         }
     });
 
